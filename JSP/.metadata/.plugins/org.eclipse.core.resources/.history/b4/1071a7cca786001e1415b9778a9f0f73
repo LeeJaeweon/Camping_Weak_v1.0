@@ -1,0 +1,63 @@
+<%@ page import="javax.xml.parsers.DocumentBuilder" %>
+<%@ page import="javax.xml.parsers.DocumentBuilderFactory" %>
+<%@ page import="org.w3c.dom.Document" %>
+<%@ page import="org.w3c.dom.Element" %>
+<%@ page import="org.w3c.dom.Node" %>
+<%@ page import="org.w3c.dom.NodeList" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>XML Parsing Example</title>
+</head>
+<body>
+<%
+    class XmlParsingUtil {
+        public static String getTagValue(String tag, Element eElement) {
+            NodeList nlList = eElement.getElementsByTagName(tag).item(0).getChildNodes();
+            Node nValue = (Node) nlList.item(0);
+            return nValue != null ? nValue.getNodeValue() : null;
+        }
+    }
+
+    int page = 1; // 페이지 초기값
+    try {
+        while (true) {
+            // parsing할 url 지정(API 키 포함해서)
+            String url = "http://finlife.fss.or.kr/finlifeapi/annuitySavingProductsSearch.xml?auth=1db6e257b5ad61c5241a1bc1c9bc863b&topFinGrpNo=050000&pageNo=" + page;
+
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(url);
+
+            // root tag
+            doc.getDocumentElement().normalize();
+            out.println("<p>Root element :" + doc.getDocumentElement().getNodeName() + "</p>");
+
+            // 파싱할 tag
+            NodeList nList = doc.getElementsByTagName("baseinfo");
+
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    out.println("<div>######################</div>");
+                    out.println("<div>금융사  : " + XmlParsingUtil.getTagValue("kor_co_nm", eElement) + "</div>");
+                    out.println("<div>상품 코드  : " + XmlParsingUtil.getTagValue("fin_prdt_cd", eElement) + "</div>");
+                    out.println("<div>상품명 : " + XmlParsingUtil.getTagValue("fin_prdt_nm", eElement) + "</div>");
+                    out.println("<div>연평균 수익률  : " + XmlParsingUtil.getTagValue("avg_prft_rate", eElement) + "</div>");
+                    out.println("<div>공시 이율  : " + XmlParsingUtil.getTagValue("dcls_rate", eElement) + "</div>");
+                }
+            }
+
+            page += 1;
+            out.println("<p>page number : " + page + "</p>");
+            if (page > 12) {
+                break;
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+%>
+</body>
+</html>

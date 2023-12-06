@@ -1,0 +1,60 @@
+<%@ page import="javax.xml.parsers.DocumentBuilder" %>
+<%@ page import="javax.xml.parsers.DocumentBuilderFactory" %>
+<%@ page import="org.w3c.dom.Document" %>
+<%@ page import="org.w3c.dom.Element" %>
+<%@ page import="org.w3c.dom.Node" %>
+<%@ page import="org.w3c.dom.NodeList" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>XML Parsing Example</title>
+</head>
+<body>
+<%
+    class XmlParsingUtil {
+        public static String getTagValue(String tag, Element eElement) {
+            NodeList nlList = eElement.getElementsByTagName(tag);
+            if (nlList != null && nlList.getLength() > 0) {
+                NodeList childNodes = nlList.item(0).getChildNodes();
+                if (childNodes.getLength() > 0) {
+                    Node nValue = (Node) childNodes.item(0);
+                    return nValue != null ? nValue.getNodeValue() : null;
+                }
+            }
+            return null;
+        }
+    }
+
+    try {
+        // parsing할 url 지정
+        String url = "http://www.boannews.com/media/news_rss.xml?mkind=1";
+
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(url);
+
+        // root tag
+        doc.getDocumentElement().normalize();
+        out.println("<p>Root element :" + doc.getDocumentElement().getNodeName() + "</p>");
+
+        // 파싱할 tag
+        NodeList nList = doc.getElementsByTagName("item");
+
+        for (int temp = 0; temp < nList.getLength(); temp++) {
+            Node nNode = nList.item(temp);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element eElement = (Element) nNode;
+                out.println("<div>######################</div>");
+                out.println("<div>Title  : " + XmlParsingUtil.getTagValue("title", eElement) + "</div>");
+                out.println("<div>Link  : " + XmlParsingUtil.getTagValue("link", eElement) + "</div>");
+                out.println("<div>Description : " + XmlParsingUtil.getTagValue("description", eElement) + "</div>");
+                // 그 외 필요한 태그들을 추가하여 값을 추출하십시오.
+            }
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+%>
+</body>
+</html>
